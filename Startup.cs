@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GraphQL.Server.Ui.Voyager;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TodoListGQL.Data;
+using TodoListGQL.GraphQl;
 
 namespace TodoListGQL
 {
@@ -22,7 +24,9 @@ namespace TodoListGQL
         }
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ApiDbContext>(o=>o.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddPooledDbContextFactory<ApiDbContext>(o=>o.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddGraphQLServer()
+                    .AddQueryType<Query>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -36,11 +40,11 @@ namespace TodoListGQL
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("Hello World!");
-                });
+                endpoints.MapGraphQL();
             });
+            app.UseGraphQLVoyager(new VoyagerOptions(){
+                GraphQLEndPoint="/graphql"
+            },"/graphql-ui");
         }
     }
 }
