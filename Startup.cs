@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TodoListGQL.Data;
 using TodoListGQL.GraphQl;
+using TodoListGQL.GraphQl.List;
 
 namespace TodoListGQL
 {
@@ -26,7 +27,12 @@ namespace TodoListGQL
         {
             services.AddPooledDbContextFactory<ApiDbContext>(o=>o.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
             services.AddGraphQLServer()
-                    .AddQueryType<Query>();
+                    .AddQueryType<Query>()
+                    .AddType<ListType>()
+                    .AddProjections()
+                    .AddMutationType<Mutation>()
+                    .AddFiltering()
+                    .AddSorting();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
